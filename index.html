@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WAT Digital | Free PC Software Download</title>
+<meta name="description" content="WAT Digital - download your favorite PC software for free.">
+<meta name="theme-color" content="#063D2A">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src https://*.supabase.co; base-uri 'none'; form-action 'none'">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2316A34A'/%3E%3Ctext x='50' y='68' font-size='54' font-family='Arial' font-weight='700' text-anchor='middle' fill='%23fff'%3EW%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #063D2A;
+    --bg-deep: #04301F;
+    --card: #0A4A34;
+    --line: rgba(255, 255, 255, 0.14);
+    --text: #FFFFFF;
+    --muted: rgba(255, 255, 255, 0.74);
+    --green: #16A34A;
+    --green-hover: #12883E;
+    --error: #FFB4B4;
+    --radius: 16px;
+    --header-h: 72px;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: var(--header-h); }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  body.no-scroll { overflow: hidden; }
+  a { color: inherit; text-decoration: none; }
+  button, input { font: inherit; }
+  :focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+  .container { width: 100%; max-width: 1160px; margin: 0 auto; padding: 0 20px; }
+
+  /* Header */
+  .site-header {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(6, 61, 42, 0.94);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .header-inner { height: var(--header-h); display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .logo { display: flex; align-items: center; gap: 10px; font-size: 1.35rem; font-weight: 800; letter-spacing: 0.2px; }
+  .logo-mark {
+    width: 38px; height: 38px; border-radius: 10px; background: var(--green);
+    display: grid; place-items: center; font-weight: 800; font-size: 1.15rem;
+  }
+  .logo span.light { font-weight: 400; opacity: 0.85; }
+  .nav { display: flex; align-items: center; gap: 6px; }
+  .nav a { padding: 8px 16px; border-radius: 999px; font-weight: 600; color: var(--muted); transition: background 0.2s, color 0.2s; }
+  .nav a:hover, .nav a.active { color: #fff; background: rgba(255, 255, 255, 0.1); }
+  .menu-toggle {
+    display: none; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 12px;
+    background: transparent; color: #fff; cursor: pointer; padding: 0; align-items: center; justify-content: center;
+  }
+  .menu-toggle .bars, .menu-toggle .bars::before, .menu-toggle .bars::after {
+    display: block; width: 20px; height: 2px; background: #fff; border-radius: 2px; transition: transform 0.25s, opacity 0.25s;
+  }
+  .menu-toggle .bars { position: relative; }
+  .menu-toggle .bars::before, .menu-toggle .bars::after { content: ""; position: absolute; left: 0; }
+  .menu-toggle .bars::before { top: -6px; }
+  .menu-toggle .bars::after { top: 6px; }
+  .menu-toggle[aria-expanded="true"] .bars { background: transparent; }
+  .menu-toggle[aria-expanded="true"] .bars::before { transform: translateY(6px) rotate(45deg); }
+  .menu-toggle[aria-expanded="true"] .bars::after { transform: translateY(-6px) rotate(-45deg); }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    background: var(--green); color: #fff; border: 0; border-radius: 12px;
+    padding: 12px 22px; font-weight: 700; cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .btn:hover { background: var(--green-hover); }
+  .btn:active { transform: scale(0.98); }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .btn-block { width: 100%; }
+  .btn-ghost { background: transparent; border: 1px solid var(--line); }
+  .btn-ghost:hover { background: rgba(255, 255, 255, 0.08); }
+
+  /* Hero */
+  .hero { padding: 88px 0 72px; text-align: center; background: radial-gradient(900px 380px at 50% -10%, rgba(22, 163, 74, 0.28), transparent 70%); }
+  .hero h1 {
+    margin: 0 auto 16px; max-width: 14ch;
+    font-size: clamp(2.5rem, 8vw, 5rem); line-height: 1.02; font-weight: 900; letter-spacing: -0.02em;
+    animation: rise 0.8s ease both;
+  }
+  .hero p { margin: 0 auto 32px; max-width: 46ch; font-size: clamp(1rem, 2.4vw, 1.25rem); color: var(--muted); animation: rise 0.8s 0.12s ease both; }
+  .search-wrap { position: relative; max-width: 620px; margin: 0 auto; animation: rise 0.8s 0.24s ease both; }
+  .search-wrap svg { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; stroke: var(--muted); fill: none; stroke-width: 2; pointer-events: none; }
+  .search-wrap input {
+    width: 100%; padding: 17px 20px 17px 52px; border-radius: 14px;
+    border: 1px solid var(--line); background: var(--bg-deep); color: #fff; font-size: 1.05rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .search-wrap input::placeholder { color: rgba(255, 255, 255, 0.55); }
+  .search-wrap input:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.3); }
+  @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+
+  /* Software */
+  .section { padding: 64px 0; }
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 28px; }
+  .section-head h2 { margin: 0; font-size: clamp(1.6rem, 4vw, 2.2rem); font-weight: 800; }
+  .result-count { color: var(--muted); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+  .card {
+    display: flex; flex-direction: column; justify-content: space-between; gap: 22px;
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .card:hover { border-color: rgba(22, 163, 74, 0.8); transform: translateY(-3px); }
+  .card h3 { margin: 0 0 8px; font-size: clamp(1.45rem, 3vw, 1.75rem); font-weight: 800; line-height: 1.15; color: #fff; word-break: break-word; }
+  .category { display: inline-block; padding: 3px 12px; border-radius: 999px; background: rgba(255, 255, 255, 0.1); color: var(--muted); font-size: 0.9rem; }
+  .empty { text-align: center; padding: 56px 20px; border: 1px dashed var(--line); border-radius: var(--radius); }
+  .empty h3 { margin: 0 0 8px; font-size: 1.5rem; }
+  .empty p { margin: 0 0 20px; color: var(--muted); }
+  [hidden] { display: none !important; }
+
+  /* About */
+  .about { background: var(--bg-deep); border-top: 1px solid var(--line); }
+  .about-grid { display: grid; gap: 32px; grid-template-columns: 1fr; }
+  .about h2 { margin: 0 0 14px; font-size: clamp(1.6rem, 4vw, 2.2rem); font-weight: 800; }
+  .about p { margin: 0 0 12px; color: var(--muted); max-width: 62ch; }
+  .points { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .points li { padding: 16px 18px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255, 255, 255, 0.04); font-weight: 600; }
+
+  /* Footer */
+  .site-footer { border-top: 1px solid var(--line); padding: 32px 0; text-align: center; }
+  .site-footer strong { font-size: 1.2rem; }
+  .site-footer p { margin: 4px 0 0; color: var(--muted); }
+
+  /* Modal */
+  .overlay {
+    position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center;
+    padding: 16px; background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(4px);
+    opacity: 0; visibility: hidden; transition: opacity 0.25s, visibility 0.25s;
+  }
+  .overlay.open { opacity: 1; visibility: visible; }
+  .modal {
+    position: relative; width: 100%; max-width: 440px; max-height: 92vh; overflow-y: auto;
+    background: var(--bg); border: 1px solid var(--line); border-radius: 20px; padding: 28px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+    transform: translateY(16px) scale(0.98); transition: transform 0.25s;
+  }
+  .overlay.open .modal { transform: none; }
+  .modal h2 { margin: 0 40px 6px 0; font-size: 1.6rem; font-weight: 800; }
+  .modal .sub { margin: 0 0 22px; color: var(--muted); }
+  .modal .sub strong { color: #fff; }
+  .close {
+    position: absolute; top: 14px; right: 14px; width: 40px; height: 40px; border-radius: 10px;
+    border: 1px solid var(--line); background: transparent; color: #fff; font-size: 1.5rem; line-height: 1; cursor: pointer;
+  }
+  .close:hover { background: rgba(255, 255, 255, 0.1); }
+  .field { margin-bottom: 18px; }
+  .field label { display: block; margin-bottom: 6px; font-weight: 600; }
+  .field input {
+    width: 100%; padding: 13px 14px; border-radius: 12px; border: 1px solid var(--line);
+    background: var(--bg-deep); color: #fff; font-size: 1rem;
+  }
+  .field input:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.3); }
+  .field.invalid input { border-color: var(--error); }
+  .phone-row { display: flex; }
+  .prefix {
+    display: flex; align-items: center; padding: 0 14px; border: 1px solid var(--line); border-right: 0;
+    border-radius: 12px 0 0 12px; background: rgba(255, 255, 255, 0.08); font-weight: 700;
+  }
+  .phone-row input { border-radius: 0 12px 12px 0; }
+  .error { min-height: 1.2em; margin: 6px 0 0; color: var(--error); font-size: 0.92rem; }
+  .hint { margin: 6px 0 0; color: var(--muted); font-size: 0.88rem; }
+  .privacy { margin: 14px 0 0; color: var(--muted); font-size: 0.85rem; text-align: center; }
+  .success { text-align: center; padding: 12px 0 4px; }
+  .success .tick { width: 64px; height: 64px; margin: 0 auto 16px; border-radius: 50%; background: var(--green); display: grid; place-items: center; font-size: 2rem; }
+  .success h2 { margin: 0 0 8px; }
+  .success p { margin: 0 0 18px; color: var(--muted); }
+
+  .notice { margin: 20px auto 0; max-width: 1120px; padding: 12px 16px; border-radius: 12px; border: 1px solid #F59E0B; background: rgba(245, 158, 11, 0.14); text-align: center; font-weight: 600; }
+
+  /* Responsive */
+  @media (min-width: 820px) { .about-grid { grid-template-columns: 1.1fr 0.9fr; align-items: start; } }
+  @media (max-width: 760px) {
+    .menu-toggle { display: inline-flex; }
+    .nav {
+      position: absolute; top: var(--header-h); left: 0; right: 0; flex-direction: column; align-items: stretch;
+      padding: 12px 20px 20px; background: var(--bg); border-bottom: 1px solid var(--line);
+      display: none;
+    }
+    .nav.open { display: flex; animation: rise 0.25s ease both; }
+    .nav a { padding: 14px 16px; border-radius: 12px; }
+    .hero { padding: 56px 0 48px; }
+    .section { padding: 48px 0; }
+  }
+  @media (max-width: 480px) { .grid { grid-template-columns: 1fr; } .modal { padding: 22px; } }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="#home" class="logo" aria-label="WAT Digital home">
+      <span class="logo-mark" id="logoMark" aria-hidden="true">W</span>
+      <span id="logoName">WAT <span class="light">Digital</span></span>
+    </a>
+    <button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mainNav">
+      <span class="bars"></span>
+    </button>
+    <nav class="nav" id="mainNav" aria-label="Main navigation">
+      <a href="#home" class="active">Home</a>
+      <a href="#software">Software</a>
+      <a href="#about">About</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="container"><p class="notice" id="notice" role="status" hidden>Downloads are paused for maintenance. Please check back soon.</p></div>
+  <section class="hero" id="home">
+    <div class="container">
+      <h1>FREE SOFTWARE DOWNLOAD</h1>
+      <p>Download your favorite PC software for free.</p>
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3" stroke-linecap="round"></path></svg>
+        <input type="search" id="searchInput" placeholder="Search software..." aria-label="Search software" autocomplete="off">
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="software">
+    <div class="container">
+      <div class="section-head">
+        <h2>Software</h2>
+        <span class="result-count" id="resultCount" aria-live="polite"></span>
+      </div>
+      <div class="grid" id="softwareGrid"></div>
+      <div class="empty" id="emptyState" hidden>
+        <h3 id="emptyTitle">No software found</h3>
+        <p id="emptyText"></p>
+        <button type="button" class="btn" id="clearSearch">Show all software</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section about" id="about">
+    <div class="container about-grid">
+      <div>
+        <h2>About WAT Digital</h2>
+        <p>WAT Digital is a free PC software download hub. We collect the programs people use every day in one place so you can find them fast.</p>
+        <p>Search for the software you need, enter your name and phone number, and your download starts.</p>
+      </div>
+      <ul class="points">
+        <li>Free PC software</li>
+        <li>Simple search and quick downloads</li>
+        <li>Works on phones, tablets and computers</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <strong id="footName">WAT Digital</strong>
+    <p id="footTag">Free PC Software Download</p>
+    <p>Copyright <span id="year">2026</span></p>
+  </div>
+</footer>
+
+<!-- Download modal -->
+<div class="overlay" id="overlay" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <button type="button" class="close" id="closeModal" aria-label="Close">&times;</button>
+
+    <div id="formView">
+      <h2 id="modalTitle">Download</h2>
+      <p class="sub">You are downloading <strong id="modalSoftware"></strong>. Enter your details to continue.</p>
+      <form id="downloadForm" novalidate>
+        <div class="field" id="nameField">
+          <label for="customerName">Customer name</label>
+          <input type="text" id="customerName" name="customerName" autocomplete="name" placeholder="Your full name" maxlength="80">
+          <p class="error" id="nameError" role="alert"></p>
+        </div>
+        <div class="field" id="phoneField">
+          <label for="customerPhone">Kenya phone number</label>
+          <div class="phone-row">
+            <span class="prefix" aria-hidden="true">+254</span>
+            <input type="tel" id="customerPhone" name="customerPhone" inputmode="numeric" autocomplete="tel-national" placeholder="712345678" maxlength="12" aria-describedby="phoneHint phoneError">
+          </div>
+          <p class="hint" id="phoneHint">Enter 9 digits, for example 712345678.</p>
+          <p class="error" id="phoneError" role="alert"></p>
+        </div>
+        <p class="error" id="formError" role="alert"></p>
+        <button type="submit" class="btn btn-block" id="submitBtn">Continue Download</button>
+        <p class="privacy">Your name and phone number are saved securely to keep a record of your download.</p>
+      </form>
+    </div>
+
+    <div class="success" id="successView" hidden>
+      <div class="tick" aria-hidden="true">&#10003;</div>
+      <h2>Thank you, <span id="thanksName"></span>!</h2>
+      <p>Your download for <strong id="thanksSoftware"></strong> is starting now.</p>
+      <a class="btn btn-ghost" id="manualLink" href="#" rel="noopener">Download did not start? Click here</a>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ===================== CONFIG =====================
+     Paste your Supabase Project URL and ANON (public) key (same values as admin.html).
+     The anon key is public by design; the database policies protect your data.
+     NEVER paste the service_role key here. */
+  var SUPABASE_URL = "https://dgrhkzwcwjcwggxgtcdp.supabase.co";
+  var SUPABASE_ANON_KEY = "sb_publishable__VwXbCukJ5-0r1H1hEH9IA_wddaeldV";
+  /* ================================================== */
+
+  var CONFIGURED = /^https:\/\/[^\s\/]+\.[^\s\/]+\/?$/.test(SUPABASE_URL) && SUPABASE_URL.indexOf("YOUR_") === -1 &&
+                   SUPABASE_ANON_KEY.indexOf("YOUR_") === -1 && SUPABASE_ANON_KEY.length > 20;
+  var BASE = SUPABASE_URL.replace(/\/$/, "");
+  var SOFTWARE = [];           // loaded from Supabase: { id, name, category }
+  var loadState = "loading";   // loading | ready | error | notconfigured
+  var downloadsEnabled = true;
+
+  var REDIRECT_DELAY_MS = 1800;
+
+  /* ---------- Element references ---------- */
+  var $ = function (id) { return document.getElementById(id); };
+  var grid = $("softwareGrid"), emptyState = $("emptyState"), emptyTitle = $("emptyTitle"), emptyText = $("emptyText");
+  var resultCount = $("resultCount"), searchInput = $("searchInput"), clearSearch = $("clearSearch");
+  var menuToggle = $("menuToggle"), mainNav = $("mainNav");
+  var overlay = $("overlay"), closeBtn = $("closeModal");
+  var form = $("downloadForm"), formView = $("formView"), successView = $("successView");
+  var nameInput = $("customerName"), phoneInput = $("customerPhone");
+  var nameField = $("nameField"), phoneField = $("phoneField");
+  var nameError = $("nameError"), phoneError = $("phoneError");
+  var modalSoftware = $("modalSoftware"), thanksName = $("thanksName"), thanksSoftware = $("thanksSoftware");
+  var manualLink = $("manualLink"), submitBtn = $("submitBtn"), formError = $("formError");
+
+  var selected = null;       // software currently chosen in the modal
+  var lastFocused = null;    // element to return focus to
+  var redirectTimer = null;
+
+  /* ---------- Render software cards ---------- */
+  function renderSoftware(list) {
+    grid.textContent = "";
+    list.forEach(function (item) {
+      var card = document.createElement("article");
+      card.className = "card";
+
+      var info = document.createElement("div");
+      var title = document.createElement("h3");
+      title.textContent = item.name;
+      var cat = document.createElement("span");
+      cat.className = "category";
+      cat.textContent = item.category || "Software";
+      info.appendChild(title);
+      info.appendChild(cat);
+
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn";
+      btn.textContent = "Download";
+      btn.setAttribute("aria-label", "Download " + item.name);
+      btn.setAttribute("data-id", item.id);
+      btn.disabled = !downloadsEnabled;
+
+      card.appendChild(info);
+      card.appendChild(btn);
+      grid.appendChild(card);
+    });
+  }
+
+  /* ---------- Real-time search ---------- */
+  function showEmpty(title, text, buttonLabel) {
+    emptyTitle.textContent = title;
+    emptyText.textContent = text;
+    clearSearch.hidden = !buttonLabel;
+    if (buttonLabel) { clearSearch.textContent = buttonLabel; }
+    emptyState.hidden = false;
+    grid.hidden = true;
+    grid.textContent = "";
+    resultCount.textContent = "";
+  }
+
+  function applySearch() {
+    if (loadState === "loading") { showEmpty("Loading software...", "Please wait a moment.", ""); return; }
+    if (loadState === "notconfigured") { showEmpty("Software list unavailable", "This website is not connected to its database yet.", ""); return; }
+    if (loadState === "error") { showEmpty("Could not load software", "Check your internet connection and try again.", "Try again"); return; }
+
+    var raw = searchInput.value.trim(), q = raw.toLowerCase();
+    var results = SOFTWARE.filter(function (s) {
+      return s.name.toLowerCase().indexOf(q) !== -1 || (s.category || "").toLowerCase().indexOf(q) !== -1;
+    });
+    if (results.length === 0) {
+      if (SOFTWARE.length === 0) { showEmpty("No software available yet", "New software is added regularly. Please check back soon.", ""); }
+      else { showEmpty("No software found", 'We could not find a match for "' + raw + '". Check the spelling or try another name.', "Show all software"); }
+      return;
+    }
+    renderSoftware(results);
+    emptyState.hidden = true;
+    grid.hidden = false;
+    resultCount.textContent = results.length + (results.length === 1 ? " program" : " programs");
+  }
+
+  searchInput.addEventListener("input", applySearch);
+  clearSearch.addEventListener("click", function () {
+    if (loadState === "error") { loadAll(); return; }
+    searchInput.value = "";
+    applySearch();
+    searchInput.focus();
+  });
+
+  /* ---------- Mobile navigation ---------- */
+  function setMenu(open) {
+    mainNav.classList.toggle("open", open);
+    menuToggle.setAttribute("aria-expanded", String(open));
+    menuToggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  }
+  menuToggle.addEventListener("click", function () {
+    setMenu(!mainNav.classList.contains("open"));
+  });
+  mainNav.addEventListener("click", function (e) {
+    if (e.target.closest("a")) { setMenu(false); }
+  });
+  document.addEventListener("click", function (e) {
+    if (mainNav.classList.contains("open") && !e.target.closest(".site-header")) { setMenu(false); }
+  });
+  window.addEventListener("resize", function () {
+    if (window.innerWidth > 760) { setMenu(false); }
+  });
+
+  /* ---------- Active nav link while scrolling ---------- */
+  var navLinks = Array.prototype.slice.call(mainNav.querySelectorAll("a"));
+  var sections = ["home", "software", "about"].map($);
+  function updateActiveLink() {
+    var pos = window.scrollY + 120, current = "home";
+    sections.forEach(function (sec) { if (sec && sec.offsetTop <= pos) { current = sec.id; } });
+    navLinks.forEach(function (a) { a.classList.toggle("active", a.getAttribute("href") === "#" + current); });
+  }
+  window.addEventListener("scroll", updateActiveLink, { passive: true });
+  updateActiveLink();
+
+  /* ---------- Modal ---------- */
+  function openModal(item) {
+    selected = item;
+    lastFocused = document.activeElement;
+    modalSoftware.textContent = item.name;
+    resetForm();
+    formView.hidden = false;
+    successView.hidden = true;
+    overlay.classList.add("open");
+    overlay.setAttribute("aria-hidden", "false");
+    document.body.classList.add("no-scroll");
+    setTimeout(function () { nameInput.focus(); }, 60);
+  }
+
+  function closeModal() {
+    clearTimeout(redirectTimer);
+    overlay.classList.remove("open");
+    overlay.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("no-scroll");
+    submitBtn.disabled = false;
+    selected = null;
+    if (lastFocused && typeof lastFocused.focus === "function") { lastFocused.focus(); }
+  }
+
+  grid.addEventListener("click", function (e) {
+    var btn = e.target.closest("button[data-id]");
+    if (!btn || !downloadsEnabled) { return; }
+    var id = btn.getAttribute("data-id");
+    var item = SOFTWARE.filter(function (s) { return s.id === id; })[0];
+    if (item) { openModal(item); }
+  });
+  closeBtn.addEventListener("click", closeModal);
+  overlay.addEventListener("click", function (e) { if (e.target === overlay) { closeModal(); } });
+
+  document.addEventListener("keydown", function (e) {
+    if (!overlay.classList.contains("open")) { return; }
+    if (e.key === "Escape") { closeModal(); return; }
+    if (e.key === "Tab") { // keep keyboard focus inside the modal
+      var focusable = Array.prototype.slice.call(
+        overlay.querySelectorAll("button, input, a[href]")
+      ).filter(function (el) { return !el.disabled && el.offsetParent !== null; });
+      if (!focusable.length) { return; }
+      var first = focusable[0], last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  });
+
+  /* ---------- Validation ---------- */
+  function setError(field, errorEl, message) {
+    field.classList.toggle("invalid", !!message);
+    errorEl.textContent = message || "";
+  }
+
+  function resetForm() {
+    form.reset();
+    setError(nameField, nameError, "");
+    setError(phoneField, phoneError, "");
+    formError.textContent = "";
+  }
+
+  function validateName() {
+    var value = nameInput.value.trim();
+    if (!value) { setError(nameField, nameError, "Please enter your name."); return false; }
+    if (value.length < 2) { setError(nameField, nameError, "Your name must have at least 2 characters."); return false; }
+    setError(nameField, nameError, "");
+    return true;
+  }
+
+  // Returns the 9-digit Kenyan number (without +254), or "" if invalid.
+  function cleanPhone(raw) {
+    var digits = raw.replace(/[\s\-()]/g, "");
+    if (digits.indexOf("+254") === 0) { digits = digits.slice(4); }
+    else if (digits.indexOf("254") === 0 && digits.length === 12) { digits = digits.slice(3); }
+    else if (digits.charAt(0) === "0") { digits = digits.slice(1); }
+    return /^[17]\d{8}$/.test(digits) ? digits : "";
+  }
+
+  function validatePhone() {
+    var raw = phoneInput.value.trim();
+    if (!raw) { setError(phoneField, phoneError, "Please enter your phone number."); return false; }
+    if (!cleanPhone(raw)) {
+      setError(phoneField, phoneError, "Enter a valid Kenya number with 9 digits starting with 7 or 1, like 712345678.");
+      return false;
+    }
+    setError(phoneField, phoneError, "");
+    return true;
+  }
+
+  nameInput.addEventListener("input", function () { if (nameField.classList.contains("invalid")) { validateName(); } });
+  phoneInput.addEventListener("input", function () {
+    phoneInput.value = phoneInput.value.replace(/[^\d+\s]/g, "");
+    if (phoneField.classList.contains("invalid")) { validatePhone(); }
+  });
+
+  /* ---------- Supabase (public, read-only keys; protected by database policies) ---------- */
+  function sb(path, options) {
+    options = options || {};
+    return fetch(BASE + "/rest/v1/" + path, {
+      method: options.method || "GET",
+      headers: { apikey: SUPABASE_ANON_KEY, "Content-Type": "application/json" },
+      body: options.body ? JSON.stringify(options.body) : undefined
+    }).then(function (r) {
+      return r.text().then(function (t) {
+        var data = null;
+        try { data = t ? JSON.parse(t) : null; } catch (e) { data = null; }
+        if (!r.ok) { throw new Error((data && data.message) || "Request failed"); }
+        return data;
+      });
+    });
+  }
+
+  function isDriveUrl(u) {
+    try { var x = new URL(u); return x.protocol === "https:" && (x.hostname === "drive.google.com" || x.hostname === "docs.google.com"); }
+    catch (e) { return false; }
+  }
+
+  function applySettings(cfg) {
+    if (!cfg) { return; }
+    if (cfg.site_name) {
+      var parts = cfg.site_name.split(" "), first = parts[0], rest = parts.slice(1).join(" ");
+      var name = $("logoName"); name.textContent = first + (rest ? " " : "");
+      if (rest) { var l = document.createElement("span"); l.className = "light"; l.textContent = rest; name.appendChild(l); }
+      $("footName").textContent = cfg.site_name;
+      document.title = cfg.site_name + (cfg.tagline ? " | " + cfg.tagline : "");
+    }
+    if (cfg.tagline) { $("footTag").textContent = cfg.tagline; }
+    if (cfg.logo_letter) { $("logoMark").textContent = cfg.logo_letter; }
+    downloadsEnabled = cfg.status !== "maintenance";
+    $("notice").hidden = downloadsEnabled;
+  }
+
+  function loadAll() {
+    if (!CONFIGURED) { loadState = "notconfigured"; applySearch(); return; }
+    loadState = "loading"; applySearch();
+    sb("rpc/list_published_software", { method: "POST", body: {} })
+      .then(function (rows) {
+        SOFTWARE = (rows || []).map(function (r) { return { id: r.id, name: r.name, category: r.category }; });
+        loadState = "ready";
+      })
+      .catch(function () { loadState = "error"; })
+      .then(function () { applySearch(); });
+    sb("site_settings?select=site_name,tagline,logo_letter,status&id=eq.1")
+      .then(function (rows) { applySettings(rows && rows[0]); applySearch(); })
+      .catch(function () { /* settings are optional; the site keeps its defaults */ });
+  }
+
+  /* ---------- Submit ---------- */
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!selected) { return; }
+    var okName = validateName();
+    var okPhone = validatePhone();
+    if (!okName) { nameInput.focus(); return; }
+    if (!okPhone) { phoneInput.focus(); return; }
+
+    var item = selected;
+    var customer = nameInput.value.trim();
+    var phone = "+254" + cleanPhone(phoneInput.value.trim());
+    submitBtn.disabled = true;
+
+    formError.textContent = "";
+    sb("rpc/record_download", { method: "POST", body: { p_software_id: item.id, p_name: customer, p_phone: phone } })
+      .then(function (url) {
+        if (!isDriveUrl(url)) { throw new Error("invalid link"); }
+        thanksName.textContent = customer.split(/\s+/)[0];
+        thanksSoftware.textContent = item.name;
+        manualLink.href = url;
+        formView.hidden = true;
+        successView.hidden = false;
+        redirectTimer = setTimeout(function () { window.location.href = url; }, REDIRECT_DELAY_MS);
+      })
+      .catch(function (err) {
+        formError.textContent = /too many/i.test(err.message) ? err.message : "We could not start your download. Please check your details and try again.";
+        submitBtn.disabled = false;
+      });
+  });
+
+  /* ---------- Init ---------- */
+  $("year").textContent = "2026";
+  loadAll();
+})();
+</script>
+</body>
+</html>

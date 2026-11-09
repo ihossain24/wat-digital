@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src https://*.supabase.co; base-uri 'none'; form-action 'none'">
+<title>WAT Digital Admin</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2316A34A'/%3E%3Ctext x='50' y='68' font-size='54' font-family='Arial' font-weight='700' text-anchor='middle' fill='%23fff'%3EW%3C/text%3E%3C/svg%3E">
+<!--
+WAT Digital Admin. Database setup lives ONLY in these two files (run in this order):
+  1. supabase-setup-1-schema.sql      (tables, RLS, functions, triggers)
+  2. supabase-setup-2-first-admin.sql (creates the first Super Admin)
+Then paste your Supabase Project URL and anon key into the CONFIG block in the script below.
+NEVER put the service_role key in this file.
+-->
+<style>
+  :root { --bg:#063D2A; --side:#042A1D; --card:#0A4A34; --line:rgba(255,255,255,.14); --text:#fff; --muted:rgba(255,255,255,.72); --green:#16A34A; --green-h:#12883E; --danger:#DC2626; --err:#FFB4B4; --side-w:260px; }
+  *,*::before,*::after { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif; line-height:1.5; -webkit-font-smoothing:antialiased; }
+  button,input,select { font:inherit; }
+  [hidden] { display:none !important; }
+  :focus-visible { outline:3px solid #fff; outline-offset:2px; }
+  h1,h2,h3,p { margin:0; }
+
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; background:var(--green); color:#fff; border:0; border-radius:10px; padding:10px 18px; font-weight:700; cursor:pointer; transition:background .2s; }
+  .btn:hover { background:var(--green-h); }
+  .btn:disabled { opacity:.55; cursor:not-allowed; }
+  .btn.ghost { background:transparent; border:1px solid var(--line); }
+  .btn.ghost:hover { background:rgba(255,255,255,.08); }
+  .btn.danger { background:var(--danger); }
+  .btn.small { padding:6px 12px; font-size:.88rem; }
+  .field { margin-bottom:16px; }
+  .field label { display:block; margin-bottom:6px; font-weight:600; }
+  .field input,.field select,.toolbar input,.toolbar select { width:100%; padding:11px 13px; border-radius:10px; border:1px solid var(--line); background:var(--side); color:#fff; }
+  .field input:focus,.field select:focus,.toolbar input:focus,.toolbar select:focus { outline:none; border-color:var(--green); box-shadow:0 0 0 3px rgba(22,163,74,.3); }
+  .field small { display:block; margin-top:5px; color:var(--muted); }
+  .msg { min-height:1.3em; margin:8px 0; color:var(--err); font-size:.95rem; }
+  .banner { padding:12px 16px; border-radius:12px; border:1px solid #F59E0B; background:rgba(245,158,11,.12); margin-bottom:18px; }
+
+  /* Login */
+  .login { min-height:100vh; display:grid; place-items:center; padding:20px; background:radial-gradient(800px 360px at 50% -10%, rgba(22,163,74,.25), transparent 70%); }
+  .login-card { width:100%; max-width:410px; background:var(--card); border:1px solid var(--line); border-radius:20px; padding:32px; }
+  .brand { display:flex; align-items:center; gap:10px; font-size:1.25rem; font-weight:800; }
+  .mark { width:38px; height:38px; border-radius:10px; background:var(--green); display:grid; place-items:center; font-weight:800; }
+  .login-card h1 { margin:22px 0 4px; font-size:1.6rem; }
+  .login-card .sub { color:var(--muted); margin-bottom:22px; }
+
+  /* Layout */
+  .app { display:flex; min-height:100vh; }
+  .sidebar { width:var(--side-w); background:var(--side); border-right:1px solid var(--line); padding:20px 14px; display:flex; flex-direction:column; gap:20px; position:fixed; inset:0 auto 0 0; z-index:60; transition:transform .25s; }
+  .sidebar nav { display:flex; flex-direction:column; gap:4px; flex:1; }
+  .nav-btn { text-align:left; background:transparent; border:0; color:var(--muted); padding:12px 14px; border-radius:10px; cursor:pointer; font-weight:600; }
+  .nav-btn:hover { background:rgba(255,255,255,.07); color:#fff; }
+  .nav-btn.active { background:var(--green); color:#fff; }
+  .main { flex:1; margin-left:var(--side-w); min-width:0; }
+  .topbar { position:sticky; top:0; z-index:40; display:flex; align-items:center; gap:14px; padding:14px 24px; background:rgba(6,61,42,.95); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); }
+  .topbar h2 { font-size:1.3rem; flex:1; }
+  .topbar .who { color:var(--muted); font-size:.9rem; }
+  .burger { display:none; width:42px; height:42px; border:1px solid var(--line); border-radius:10px; background:transparent; color:#fff; font-size:1.3rem; cursor:pointer; }
+  .scrim { position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:55; }
+  .content { padding:24px; max-width:1180px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:16px; margin-bottom:22px; }
+  .stat .n { font-size:2.3rem; font-weight:800; line-height:1.1; }
+  .stat .l { color:var(--muted); }
+  .card h3 { font-size:1.15rem; margin-bottom:14px; }
+  .toolbar { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px; }
+  .toolbar input { flex:1 1 220px; width:auto; }
+  .toolbar select { width:auto; flex:0 0 auto; }
+  .table-wrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; min-width:560px; }
+  th,td { text-align:left; padding:12px 10px; border-bottom:1px solid var(--line); vertical-align:middle; }
+  th { color:var(--muted); font-weight:600; font-size:.88rem; }
+  .row-actions { display:flex; flex-wrap:wrap; gap:6px; }
+  .badge { display:inline-block; padding:2px 10px; border-radius:999px; font-size:.82rem; font-weight:700; }
+  .badge.on { background:rgba(22,163,74,.3); } .badge.off { background:rgba(255,255,255,.14); color:var(--muted); }
+  .empty { padding:28px 10px; text-align:center; color:var(--muted); }
+  .two { display:grid; gap:20px; grid-template-columns:1fr; }
+  .activity { list-style:none; margin:0; padding:0; }
+  .activity li { padding:10px 0; border-bottom:1px solid var(--line); }
+  .activity li:last-child { border:0; }
+  .activity small { color:var(--muted); display:block; }
+
+  /* Modal + toast */
+  .overlay { position:fixed; inset:0; z-index:100; display:grid; place-items:center; padding:16px; background:rgba(0,0,0,.65); }
+  .modal { width:100%; max-width:460px; max-height:92vh; overflow:auto; background:var(--bg); border:1px solid var(--line); border-radius:18px; padding:26px; }
+  .modal h3 { margin-bottom:16px; font-size:1.3rem; }
+  .modal .actions { display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; }
+  .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:200; background:#fff; color:#063D2A; font-weight:700; padding:12px 20px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.4); max-width:90vw; }
+  .toast.error { background:#FFE1E1; color:#8A1212; }
+
+  @media (min-width:900px) { .two { grid-template-columns:1.2fr 1fr; } }
+  @media (max-width:899px) {
+    .sidebar { transform:translateX(-100%); }
+    .sidebar.open { transform:none; }
+    .main { margin-left:0; }
+    .burger { display:inline-block; }
+    .topbar,.content { padding-left:16px; padding-right:16px; }
+    .topbar .who { display:none; }
+  }
+  @media (prefers-reduced-motion:reduce) { * { transition:none !important; } }
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<section class="login" id="loginView">
+  <div class="login-card">
+    <div class="brand"><span class="mark" aria-hidden="true">W</span> WAT Digital</div>
+    <h1>Admin login</h1>
+    <p class="sub">Authorized administrators only.</p>
+    <div class="banner" id="notConfigured" hidden>Supabase is not connected yet. Add your project URL and anon key in the CONFIG section of this file to enable login.</div>
+    <form id="loginForm" novalidate>
+      <div class="field"><label for="email">Email</label><input type="email" id="email" autocomplete="username" required></div>
+      <div class="field"><label for="password">Password</label><input type="password" id="password" autocomplete="current-password" required></div>
+      <p class="msg" id="loginMsg" role="alert"></p>
+      <button class="btn" id="loginBtn" type="submit" style="width:100%">Sign in</button>
+    </form>
+  </div>
+</section>
+
+<!-- ============ DASHBOARD ============ -->
+<div class="app" id="appView" hidden>
+  <aside class="sidebar" id="sidebar" aria-label="Admin navigation">
+    <div class="brand"><span class="mark" aria-hidden="true">W</span> WAT Admin</div>
+    <nav>
+      <button class="nav-btn active" data-view="overview">Overview</button>
+      <button class="nav-btn" data-view="add">Add Software</button>
+      <button class="nav-btn" data-view="manage">Manage Software</button>
+      <button class="nav-btn" data-view="categories">Categories</button>
+      <button class="nav-btn" data-view="customers">Customers</button>
+      <button class="nav-btn" data-view="downloads">Download History</button>
+      <button class="nav-btn" data-view="settings">Website Settings</button>
+      <button class="nav-btn" data-view="admins" id="navAdmins" hidden>Admin Users</button>
+    </nav>
+    <button class="btn ghost" id="logoutBtn" type="button">Log out</button>
+  </aside>
+  <div class="scrim" id="scrim" hidden></div>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger" type="button" aria-label="Open menu" aria-controls="sidebar">&#9776;</button>
+      <h2 id="viewTitle">Overview</h2>
+      <span class="who" id="who"></span>
+    </header>
+
+    <main class="content">
+      <!-- Overview -->
+      <section data-panel="overview">
+        <div class="stats">
+          <div class="card stat"><div class="n" id="stSoftware">-</div><div class="l">Total Software</div></div>
+          <div class="card stat"><div class="n" id="stDownloads">-</div><div class="l">Total Downloads</div></div>
+          <div class="card stat"><div class="n" id="stCustomers">-</div><div class="l">Total Customers</div></div>
+          <div class="card stat"><div class="n" id="stActive">-</div><div class="l">Active Software</div></div>
+        </div>
+        <div class="card"><h3>Recent Activity</h3><ul class="activity" id="recentList"></ul></div>
+      </section>
+
+      <!-- Add -->
+      <section data-panel="add" hidden>
+        <div class="card" style="max-width:560px">
+          <h3>Add software</h3>
+          <form id="addForm" novalidate>
+            <div class="field"><label for="addName">Software name *</label><input id="addName" maxlength="80" required></div>
+            <div class="field"><label for="addUrl">Google Drive download URL *</label><input id="addUrl" type="url" placeholder="https://drive.google.com/..." required><small>Must be a https://drive.google.com link.</small></div>
+            <div class="field"><label for="addCat">Category</label><select id="addCat"><option value="">No category</option></select><small>Create categories on the Categories page.</small></div>
+            <p class="msg" id="addMsg" role="alert"></p>
+            <button class="btn" id="addBtn" type="submit">Publish</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Manage -->
+      <section data-panel="manage" hidden>
+        <div class="card">
+          <div class="toolbar"><input type="search" id="swSearch" placeholder="Search software..." aria-label="Search software"></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Name</th><th>Category</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="swBody"></tbody>
+          </table></div>
+          <p class="empty" id="swEmpty" hidden></p>
+        </div>
+      </section>
+
+      <!-- Categories -->
+      <section data-panel="categories" hidden>
+        <div class="two">
+          <div class="card">
+            <h3>Add category</h3>
+            <form id="catForm" novalidate>
+              <div class="field"><label for="catName">Category name *</label><input id="catName" maxlength="40" required></div>
+              <p class="msg" id="catMsg" role="alert"></p>
+              <button class="btn" id="catBtn" type="submit">Add category</button>
+            </form>
+          </div>
+          <div class="card">
+            <h3>All categories</h3>
+            <div class="table-wrap"><table>
+              <thead><tr><th>Name</th><th>Actions</th></tr></thead>
+              <tbody id="catBody"></tbody>
+            </table></div>
+            <p class="empty" id="catEmpty" hidden></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Customers -->
+      <section data-panel="customers" hidden>
+        <div class="card">
+          <div class="toolbar">
+            <input type="search" id="cuSearch" placeholder="Search name or phone..." aria-label="Search customers">
+            <select id="cuRange" aria-label="Filter by registration date">
+              <option value="0">All time</option><option value="1">Today</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option>
+            </select>
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Customer name</th><th>Phone</th><th>Registered</th></tr></thead>
+            <tbody id="cuBody"></tbody>
+          </table></div>
+          <p class="empty" id="cuEmpty" hidden></p>
+        </div>
+      </section>
+
+      <!-- Downloads -->
+      <section data-panel="downloads" hidden>
+        <div class="card">
+          <div class="toolbar"><input type="search" id="dlSearch" placeholder="Search software, customer or phone..." aria-label="Search download history"></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Software</th><th>Customer</th><th>Phone</th><th>Date and time</th></tr></thead>
+            <tbody id="dlBody"></tbody>
+          </table></div>
+          <p class="empty" id="dlEmpty" hidden></p>
+        </div>
+      </section>
+
+      <!-- Admin users (Super Admin only) -->
+      <section data-panel="admins" hidden>
+        <div class="two">
+          <div class="card">
+            <h3>Add administrator</h3>
+            <form id="admForm" novalidate>
+              <div class="field"><label for="admEmail">Email *</label><input id="admEmail" type="email" autocomplete="off"><small>Create the user in Supabase Authentication first, then add their email here.</small></div>
+              <div class="field"><label for="admRole">Role</label><select id="admRole"><option value="admin">Admin</option><option value="super_admin">Super Admin</option></select></div>
+              <p class="msg" id="admMsg" role="alert"></p>
+              <button class="btn" id="admBtn" type="submit">Add administrator</button>
+            </form>
+          </div>
+          <div class="card">
+            <h3>Administrators</h3>
+            <div class="table-wrap"><table>
+              <thead><tr><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
+              <tbody id="admBody"></tbody>
+            </table></div>
+            <p class="empty" id="admEmpty" hidden></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Settings -->
+      <section data-panel="settings" hidden>
+        <div class="card" style="max-width:560px">
+          <h3>Website settings</h3>
+          <form id="setForm" novalidate>
+            <div class="field"><label for="setName">Website name</label><input id="setName" maxlength="60"></div>
+            <div class="field"><label for="setTag">Website tagline</label><input id="setTag" maxlength="120"></div>
+            <div class="field"><label for="setLogo">Logo letter</label><input id="setLogo" maxlength="2" style="max-width:100px"></div>
+            <div class="field"><label for="setStatus">Website status</label>
+              <select id="setStatus"><option value="online">Online</option><option value="maintenance">Maintenance</option></select>
+              <small>The public site will read these values once it is connected to Supabase.</small></div>
+            <p class="msg" id="setMsg" role="alert"></p>
+            <button class="btn" id="setBtn" type="submit">Save settings</button>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- Edit / confirm modal -->
+<div class="overlay" id="overlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <h3 id="mTitle"></h3>
+    <div id="mBody"></div>
+    <p class="msg" id="mMsg" role="alert"></p>
+    <div class="actions"><button class="btn ghost" id="mCancel" type="button">Cancel</button><button class="btn" id="mOk" type="button">Save</button></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ===================== CONFIG =====================
+     Paste your Supabase Project URL and ANON (public) key. (If you use a custom Supabase domain, also edit connect-src in the CSP meta tag.)
+     The anon key is safe in the browser ONLY because Row Level Security
+     protects the data. NEVER paste the service-role key here. */
+  var SUPABASE_URL = "https://dgrhkzwcwjcwggxgtcdp.supabase.co";
+  var SUPABASE_ANON_KEY = "sb_publishable__VwXbCukJ5-0r1H1hEH9IA_wddaeldV";
+  /* ================================================== */
+
+  var CONFIGURED = /^https:\/\/[^\s\/]+\.[^\s\/]+\/?$/.test(SUPABASE_URL) && SUPABASE_URL.indexOf("YOUR_") === -1 && SUPABASE_ANON_KEY.indexOf("YOUR_") === -1 && SUPABASE_ANON_KEY.length > 20;
+  var BASE = SUPABASE_URL.replace(/\/$/, "");
+  var SKEY = "wat_admin_session";
+  var $ = function (id) { return document.getElementById(id); };
+  var session = null, role = null, softwareCache = [], categoryCache = [], customerCache = [], downloadCache = [];
+
+  /* ---------- helpers ---------- */
+  function el(tag, text, cls) { var e = document.createElement(tag); if (text !== undefined) { e.textContent = text; } if (cls) { e.className = cls; } return e; }
+  function fmt(d) { var x = new Date(d); return isNaN(x) ? "-" : x.toLocaleString([], { dateStyle: "medium", timeStyle: "short" }); }
+  function toast(text, isErr) {
+    var t = el("div", text, "toast" + (isErr ? " error" : "")); t.setAttribute("role", "status");
+    document.body.appendChild(t); setTimeout(function () { t.remove(); }, 3200);
+  }
+  function driveOk(u) { try { var x = new URL(u); return x.protocol === "https:" && (x.hostname === "drive.google.com" || x.hostname === "docs.google.com"); } catch (e) { return false; } }
+
+  /* ---------- session (tokens only; no customer data is ever stored in the browser) ---------- */
+  function saveSession(s) { session = s; try { sessionStorage.setItem(SKEY, JSON.stringify(s)); } catch (e) { /* ignore */ } }
+  function clearSession() { session = null; try { sessionStorage.removeItem(SKEY); } catch (e) { /* ignore */ } }
+  function loadSession() { try { return JSON.parse(sessionStorage.getItem(SKEY)); } catch (e) { return null; } }
+
+  /* ---------- Supabase REST (auth + database, no service-role key) ---------- */
+  function authFetch(path, body) {
+    return fetch(BASE + "/auth/v1/" + path, { method: "POST", headers: { apikey: SUPABASE_ANON_KEY, "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  }
+  function refresh() {
+    if (!session || !session.refresh_token) { return Promise.reject(new Error("no session")); }
+    return authFetch("token?grant_type=refresh_token", { refresh_token: session.refresh_token })
+      .then(function (r) { if (!r.ok) { throw new Error("expired"); } return r.json(); })
+      .then(function (d) { saveSession({ access_token: d.access_token, refresh_token: d.refresh_token, email: session.email, uid: session.uid }); });
+  }
+  // opts: { method, body, prefer, headOnly }  -> resolves { data, count }
+  function db(path, opts, retried) {
+    opts = opts || {};
+    var h = { apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + (session && session.access_token), "Content-Type": "application/json" };
+    if (opts.prefer) { h.Prefer = opts.prefer; }
+    return fetch(BASE + "/rest/v1/" + path, { method: opts.method || "GET", headers: h, body: opts.body ? JSON.stringify(opts.body) : undefined })
+      .then(function (r) {
+        if (r.status === 401 && !retried) { return refresh().then(function () { return db(path, opts, true); }); }
+        if (!r.ok) { return r.json().catch(function () { return {}; }).then(function (e) { throw new Error(e.message || ("Request failed (" + r.status + ")")); }); }
+        var range = r.headers.get("Content-Range"), count = range ? parseInt(range.split("/")[1], 10) : null;
+        return r.text().then(function (t) { return { data: t ? JSON.parse(t) : null, count: count }; });
+      });
+  }
+  function count(table, filter) {
+    return db(table + "?select=id" + (filter || "") + "&limit=1", { prefer: "count=exact" }).then(function (r) { return r.count; });
+  }
+
+  /* ---------- login / logout ---------- */
+  function showLogin(msg) {
+    $("appView").hidden = true; $("loginView").hidden = false; $("loginMsg").textContent = msg || "";
+    $("notConfigured").hidden = CONFIGURED; $("loginBtn").disabled = !CONFIGURED;
+  }
+  function showApp() {
+    $("loginView").hidden = true; $("appView").hidden = false; $("navAdmins").hidden = role !== "super_admin";
+    $("who").textContent = (session.email || "") + (role === "super_admin" ? " (Super Admin)" : " (Admin)");
+    go("overview");
+  }
+  function catName(s) { return s.categories && s.categories.name ? s.categories.name : ""; }
+  // Asks the server who this user is. The database returns a role only for rows in the admins table.
+  function verifyAdmin() {
+    return db("rpc/my_admin_role", { method: "POST", body: {} }).then(function (r) { role = r.data || null; return !!role; });
+  }
+  // Runs before EVERY write: re-checks the role on the server. The database policies enforce it again.
+  function guard(needSuper) {
+    return db("rpc/my_admin_role", { method: "POST", body: {} }).then(function (r) {
+      role = r.data || null;
+      if (!role) { logout("Your admin access has ended. Contact the Super Admin."); throw new Error("Not authorized."); }
+      if (needSuper && role !== "super_admin") { throw new Error("Only a Super Admin can do this."); }
+    });
+  }
+  function dbw(path, opts, needSuper) {
+    var m = opts.method || "GET", checkRows = m === "PATCH" || m === "DELETE";
+    if (checkRows) { opts.prefer = "return=representation"; }
+    return guard(needSuper).then(function () { return db(path, opts); }).then(function (r) {
+      if (checkRows && (!r.data || !r.data.length)) { throw new Error("No changes were made. The record may not exist, or you may not have permission."); }
+      return r;
+    });
+  }
+  $("loginForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var email = $("email").value.trim(), pass = $("password").value;
+    if (!email || !pass) { $("loginMsg").textContent = "Enter your email and password."; return; }
+    $("loginBtn").disabled = true; $("loginMsg").textContent = "";
+    authFetch("token?grant_type=password", { email: email, password: pass })
+      .then(function (r) { if (!r.ok) { throw new Error("bad"); } return r.json(); })
+      .then(function (d) { saveSession({ access_token: d.access_token, refresh_token: d.refresh_token, email: d.user.email, uid: d.user.id }); return verifyAdmin(); })
+      .then(function (ok) {
+        if (!ok) { logout("This account is not authorized for the admin panel."); return; }
+        $("password").value = ""; showApp();
+      })
+      .catch(function () { clearSession(); $("loginMsg").textContent = "Sign in failed. Check your email and password."; })
+      .then(function () { $("loginBtn").disabled = !CONFIGURED; });
+  });
+  function logout(msg) {
+    var tok = session && session.access_token;
+    if (tok && CONFIGURED) { fetch(BASE + "/auth/v1/logout", { method: "POST", headers: { apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + tok } }).catch(function () {}); }
+    clearSession(); role = null; softwareCache = []; categoryCache = []; customerCache = []; downloadCache = []; showLogin(typeof msg === "string" ? msg : "");
+  }
+  $("logoutBtn").addEventListener("click", function () { logout(); });
+
+  /* ---------- navigation ---------- */
+  var TITLES = { overview: "Overview", add: "Add Software", manage: "Manage Software", categories: "Categories", customers: "Customers", downloads: "Download History", settings: "Website Settings", admins: "Admin Users" };
+  function sidebar(open) { $("sidebar").classList.toggle("open", open); $("scrim").hidden = !open; $("burger").setAttribute("aria-label", open ? "Close menu" : "Open menu"); }
+  function go(view) {
+    if (view === "admins" && role !== "super_admin") { view = "overview"; }
+    document.querySelectorAll("[data-panel]").forEach(function (p) { p.hidden = p.getAttribute("data-panel") !== view; });
+    document.querySelectorAll(".nav-btn").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-view") === view); });
+    $("viewTitle").textContent = TITLES[view]; sidebar(false); window.scrollTo(0, 0);
+    ({ overview: loadOverview, add: loadAddForm, manage: loadSoftware, categories: loadCategories, customers: loadCustomers, downloads: loadDownloads, settings: loadSettings, admins: loadAdmins }[view] || function () {})();
+  }
+  document.querySelectorAll(".nav-btn").forEach(function (b) { b.addEventListener("click", function () { go(b.getAttribute("data-view")); }); });
+  $("burger").addEventListener("click", function () { sidebar(!$("sidebar").classList.contains("open")); });
+  $("scrim").addEventListener("click", function () { sidebar(false); });
+  function fail(err) { if (!session) { return; } toast(err && err.message ? err.message : "Something went wrong.", true); }
+
+  /* ---------- overview ---------- */
+  function loadOverview() {
+    ["stSoftware", "stDownloads", "stCustomers", "stActive"].forEach(function (i) { $(i).textContent = "-"; });
+    Promise.all([count("software"), count("downloads"), count("customers"), count("software", "&published=eq.true")])
+      .then(function (c) { $("stSoftware").textContent = c[0]; $("stDownloads").textContent = c[1]; $("stCustomers").textContent = c[2]; $("stActive").textContent = c[3]; })
+      .catch(fail);
+    db("downloads?select=created_at,software(name),customers(name)&order=created_at.desc&limit=8").then(function (r) {
+      var ul = $("recentList"); ul.textContent = "";
+      if (!r.data.length) { ul.appendChild(el("li", "No activity yet.", "empty")); return; }
+      r.data.forEach(function (d) {
+        var li = el("li", (d.customers ? d.customers.name : "Unknown customer") + " downloaded " + (d.software ? d.software.name : "removed software"));
+        li.appendChild(el("small", fmt(d.created_at))); ul.appendChild(li);
+      });
+    }).catch(fail);
+  }
+
+  /* ---------- add software ---------- */
+  $("addForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var name = $("addName").value.trim(), url = $("addUrl").value.trim(), cat = $("addCat").value.trim(), msg = $("addMsg");
+    if (!name) { msg.textContent = "Software name is required."; return; }
+    if (!url) { msg.textContent = "Google Drive download URL is required."; return; }
+    if (!driveOk(url)) { msg.textContent = "Enter a valid https://drive.google.com link."; return; }
+    msg.textContent = ""; $("addBtn").disabled = true;
+    dbw("software", { method: "POST", prefer: "return=minimal", body: { name: name, drive_url: url, category_id: cat || null, published: true } })
+      .then(function () { toast(name + " published."); $("addForm").reset(); })
+      .catch(function (err) { msg.textContent = err.message; })
+      .then(function () { $("addBtn").disabled = false; });
+  });
+
+  /* ---------- manage software ---------- */
+  function loadSoftware() {
+    Promise.all([db("software?select=*,categories(name)&order=created_at.desc"), db("categories?select=*&order=name")])
+      .then(function (r) { softwareCache = r[0].data; categoryCache = r[1].data; renderSoftware(); }).catch(fail);
+  }
+  function renderSoftware() {
+    var q = $("swSearch").value.trim().toLowerCase(), body = $("swBody"); body.textContent = "";
+    var list = softwareCache.filter(function (s) { return (s.name + " " + catName(s)).toLowerCase().indexOf(q) !== -1; });
+    $("swEmpty").hidden = list.length > 0; $("swEmpty").textContent = softwareCache.length ? "No software matches your search." : "No software yet. Use Add Software to create the first one.";
+    list.forEach(function (s) {
+      var tr = document.createElement("tr"), st = el("td"), act = el("td"), box = el("div", undefined, "row-actions");
+      tr.appendChild(el("td", s.name)); tr.appendChild(el("td", catName(s) || "-"));
+      st.appendChild(el("span", s.published ? "Published" : "Unpublished", "badge " + (s.published ? "on" : "off"))); tr.appendChild(st);
+      [["Edit", "ghost", function () { editSoftware(s); }], [s.published ? "Unpublish" : "Publish", "ghost", function () { togglePublish(s); }], ["Delete", "danger", function () { deleteSoftware(s); }]]
+        .forEach(function (a) { var b = el("button", a[0], "btn small " + a[1]); b.type = "button"; b.addEventListener("click", a[2]); box.appendChild(b); });
+      act.appendChild(box); tr.appendChild(act); body.appendChild(tr);
+    });
+  }
+  $("swSearch").addEventListener("input", renderSoftware);
+  function togglePublish(s) {
+    dbw("software?id=eq." + encodeURIComponent(s.id), { method: "PATCH", prefer: "return=minimal", body: { published: !s.published } })
+      .then(function () { toast(s.published ? "Unpublished." : "Published."); loadSoftware(); }).catch(fail);
+  }
+
+  /* ---------- modal ---------- */
+  var onOk = null;
+  function openModal(title, bodyNode, okText, danger, handler) {
+    $("mTitle").textContent = title; $("mBody").textContent = ""; $("mBody").appendChild(bodyNode); $("mMsg").textContent = "";
+    $("mOk").textContent = okText; $("mOk").className = "btn" + (danger ? " danger" : ""); $("mOk").disabled = false; onOk = handler; $("overlay").hidden = false;
+    var f = $("mBody").querySelector("input"); (f || $("mOk")).focus();
+  }
+  function closeModal() { $("overlay").hidden = true; onOk = null; }
+  $("mCancel").addEventListener("click", closeModal);
+  $("overlay").addEventListener("click", function (e) { if (e.target === $("overlay")) { closeModal(); } });
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape") { return; }
+    if (!$("overlay").hidden) { closeModal(); } else { sidebar(false); }
+  });
+  $("mOk").addEventListener("click", function () { if (onOk) { onOk(); } });
+
+  function modalField(id, label, value, type) {
+    var w = el("div", undefined, "field"), l = el("label", label), i = document.createElement("input");
+    l.htmlFor = id; i.id = id; i.type = type || "text"; i.value = value || ""; w.appendChild(l); w.appendChild(i); return w;
+  }
+  function editSoftware(s) {
+    var box = el("div"); box.appendChild(modalField("eName", "Software name", s.name)); box.appendChild(modalField("eUrl", "Google Drive download URL", s.drive_url, "url")); box.appendChild(modalSelect("eCat", "Category", s.category_id));
+    openModal("Edit " + s.name, box, "Save changes", false, function () {
+      var name = $("eName").value.trim(), url = $("eUrl").value.trim(), cat = $("eCat").value.trim();
+      if (!name) { $("mMsg").textContent = "Software name is required."; return; }
+      if (!driveOk(url)) { $("mMsg").textContent = "Enter a valid https://drive.google.com link."; return; }
+      $("mOk").disabled = true;
+      dbw("software?id=eq." + encodeURIComponent(s.id), { method: "PATCH", prefer: "return=minimal", body: { name: name, drive_url: url, category_id: cat || null } })
+        .then(function () { closeModal(); toast("Software updated."); loadSoftware(); })
+        .catch(function (err) { $("mMsg").textContent = err.message; $("mOk").disabled = false; });
+    });
+  }
+  function deleteSoftware(s) {
+    openModal("Delete " + s.name + "?", el("p", "This permanently removes the software. Download history entries for it will show as removed software."), "Delete", true, function () {
+      $("mOk").disabled = true;
+      dbw("software?id=eq." + encodeURIComponent(s.id), { method: "DELETE", prefer: "return=minimal" })
+        .then(function () { closeModal(); toast("Software deleted."); loadSoftware(); })
+        .catch(function (err) { $("mMsg").textContent = err.message; $("mOk").disabled = false; });
+    });
+  }
+
+  /* ---------- customers ---------- */
+  function loadCustomers() { db("customers?select=*&order=created_at.desc").then(function (r) { customerCache = r.data; renderCustomers(); }).catch(fail); }
+  function renderCustomers() {
+    var q = $("cuSearch").value.trim().toLowerCase(), days = parseInt($("cuRange").value, 10), body = $("cuBody"); body.textContent = "";
+    var since = days ? Date.now() - days * 864e5 : 0;
+    var list = customerCache.filter(function (c) { return (c.name + " " + c.phone).toLowerCase().indexOf(q) !== -1 && new Date(c.created_at).getTime() >= since; });
+    $("cuEmpty").hidden = list.length > 0; $("cuEmpty").textContent = customerCache.length ? "No customers match your filters." : "No customers yet.";
+    list.forEach(function (c) { var tr = document.createElement("tr"); tr.appendChild(el("td", c.name)); tr.appendChild(el("td", c.phone)); tr.appendChild(el("td", fmt(c.created_at))); body.appendChild(tr); });
+  }
+  $("cuSearch").addEventListener("input", renderCustomers); $("cuRange").addEventListener("change", renderCustomers);
+
+  /* ---------- download history ---------- */
+  function loadDownloads() { db("downloads?select=created_at,software(name),customers(name,phone)&order=created_at.desc&limit=500").then(function (r) { downloadCache = r.data; renderDownloads(); }).catch(fail); }
+  function renderDownloads() {
+    var q = $("dlSearch").value.trim().toLowerCase(), body = $("dlBody"); body.textContent = "";
+    var rows = downloadCache.map(function (d) { return { sw: d.software ? d.software.name : "Removed software", cu: d.customers ? d.customers.name : "Unknown", ph: d.customers ? d.customers.phone : "-", at: d.created_at }; });
+    var list = rows.filter(function (r) { return (r.sw + " " + r.cu + " " + r.ph).toLowerCase().indexOf(q) !== -1; });
+    $("dlEmpty").hidden = list.length > 0; $("dlEmpty").textContent = downloadCache.length ? "No downloads match your search." : "No downloads recorded yet.";
+    list.forEach(function (r) { var tr = document.createElement("tr"); tr.appendChild(el("td", r.sw)); tr.appendChild(el("td", r.cu)); tr.appendChild(el("td", r.ph)); tr.appendChild(el("td", fmt(r.at))); body.appendChild(tr); });
+  }
+  $("dlSearch").addEventListener("input", renderDownloads);
+
+  /* ---------- website settings ---------- */
+  function loadSettings() {
+    db("site_settings?select=*&id=eq.1").then(function (r) {
+      var s = r.data[0] || {}; $("setName").value = s.site_name || ""; $("setTag").value = s.tagline || ""; $("setLogo").value = s.logo_letter || ""; $("setStatus").value = s.status || "online";
+    }).catch(fail);
+  }
+  $("setForm").addEventListener("submit", function (e) {
+    e.preventDefault(); $("setBtn").disabled = true; $("setMsg").textContent = "";
+    dbw("site_settings?id=eq.1", { method: "PATCH", prefer: "return=minimal", body: { site_name: $("setName").value.trim(), tagline: $("setTag").value.trim(), logo_letter: $("setLogo").value.trim(), status: $("setStatus").value } })
+      .then(function () { toast("Settings saved."); })
+      .catch(function (err) { $("setMsg").textContent = err.message; })
+      .then(function () { $("setBtn").disabled = false; });
+  });
+
+  /* ---------- category selects ---------- */
+  function fillSelect(sel, value) {
+    sel.textContent = "";
+    var none = el("option", "No category"); none.value = ""; sel.appendChild(none);
+    categoryCache.forEach(function (c) { var o = el("option", c.name); o.value = c.id; sel.appendChild(o); });
+    sel.value = value || "";
+  }
+  function modalSelect(id, label, value) {
+    var w = el("div", undefined, "field"), l = el("label", label), sel = document.createElement("select");
+    l.htmlFor = id; sel.id = id; fillSelect(sel, value); w.appendChild(l); w.appendChild(sel); return w;
+  }
+  function loadAddForm() { db("categories?select=*&order=name").then(function (r) { categoryCache = r.data; fillSelect($("addCat"), ""); }).catch(fail); }
+
+  /* ---------- categories ---------- */
+  function loadCategories() { db("categories?select=*&order=name").then(function (r) { categoryCache = r.data; renderCategories(); }).catch(fail); }
+  function renderCategories() {
+    var body = $("catBody"); body.textContent = "";
+    $("catEmpty").hidden = categoryCache.length > 0; $("catEmpty").textContent = "No categories yet. Add the first one.";
+    categoryCache.forEach(function (c) {
+      var tr = document.createElement("tr"), act = el("td"), box = el("div", undefined, "row-actions");
+      tr.appendChild(el("td", c.name));
+      [["Rename", "ghost", function () { renameCategory(c); }], ["Delete", "danger", function () { deleteCategory(c); }]].forEach(function (a) {
+        var b = el("button", a[0], "btn small " + a[1]); b.type = "button"; b.addEventListener("click", a[2]); box.appendChild(b);
+      });
+      act.appendChild(box); tr.appendChild(act); body.appendChild(tr);
+    });
+  }
+  $("catForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var name = $("catName").value.trim(), msg = $("catMsg");
+    if (!name) { msg.textContent = "Category name is required."; return; }
+    msg.textContent = ""; $("catBtn").disabled = true;
+    dbw("categories", { method: "POST", prefer: "return=minimal", body: { name: name } })
+      .then(function () { toast("Category added."); $("catForm").reset(); loadCategories(); })
+      .catch(function (err) { msg.textContent = /duplicate|unique/i.test(err.message) ? "That category already exists." : err.message; })
+      .then(function () { $("catBtn").disabled = false; });
+  });
+  function renameCategory(c) {
+    var box = el("div"); box.appendChild(modalField("cName", "Category name", c.name));
+    openModal("Rename category", box, "Save", false, function () {
+      var name = $("cName").value.trim();
+      if (!name) { $("mMsg").textContent = "Category name is required."; return; }
+      $("mOk").disabled = true;
+      dbw("categories?id=eq." + encodeURIComponent(c.id), { method: "PATCH", prefer: "return=minimal", body: { name: name } })
+        .then(function () { closeModal(); toast("Category renamed."); loadCategories(); })
+        .catch(function (err) { $("mMsg").textContent = /duplicate|unique/i.test(err.message) ? "That category already exists." : err.message; $("mOk").disabled = false; });
+    });
+  }
+  function deleteCategory(c) {
+    openModal("Delete " + c.name + "?", el("p", "Software in this category will stay published but will have no category."), "Delete", true, function () {
+      $("mOk").disabled = true;
+      dbw("categories?id=eq." + encodeURIComponent(c.id), { method: "DELETE", prefer: "return=minimal" })
+        .then(function () { closeModal(); toast("Category deleted."); loadCategories(); })
+        .catch(function (err) { $("mMsg").textContent = err.message; $("mOk").disabled = false; });
+    });
+  }
+
+  /* ---------- admin users (Super Admin only; enforced again by the database) ---------- */
+  function loadAdmins() { db("admins?select=*&order=created_at").then(function (r) { renderAdmins(r.data); }).catch(fail); }
+  function renderAdmins(list) {
+    var body = $("admBody"); body.textContent = "";
+    $("admEmpty").hidden = list.length > 0; $("admEmpty").textContent = "No administrators found.";
+    list.forEach(function (a) {
+      var tr = document.createElement("tr"), rt = el("td"), act = el("td");
+      tr.appendChild(el("td", a.email));
+      rt.appendChild(el("span", a.role === "super_admin" ? "Super Admin" : "Admin", "badge " + (a.role === "super_admin" ? "on" : "off"))); tr.appendChild(rt);
+      if (a.user_id !== session.uid) {
+        var b = el("button", "Remove", "btn small danger"); b.type = "button"; b.addEventListener("click", function () { removeAdmin(a); }); act.appendChild(b);
+      } else { act.textContent = "You"; }
+      tr.appendChild(act); body.appendChild(tr);
+    });
+  }
+  $("admForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var email = $("admEmail").value.trim(), msg = $("admMsg");
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { msg.textContent = "Enter a valid email address."; return; }
+    msg.textContent = ""; $("admBtn").disabled = true;
+    dbw("rpc/add_admin", { method: "POST", prefer: "return=minimal", body: { p_email: email, p_role: $("admRole").value } }, true)
+      .then(function () { toast("Administrator saved."); $("admForm").reset(); loadAdmins(); })
+      .catch(function (err) { msg.textContent = err.message; })
+      .then(function () { $("admBtn").disabled = false; });
+  });
+  function removeAdmin(a) {
+    openModal("Remove " + a.email + "?", el("p", "They will lose admin access immediately. Their login account is not deleted."), "Remove", true, function () {
+      $("mOk").disabled = true;
+      dbw("admins?user_id=eq." + encodeURIComponent(a.user_id), { method: "DELETE", prefer: "return=minimal" }, true)
+        .then(function () { closeModal(); toast("Administrator removed."); loadAdmins(); })
+        .catch(function (err) { $("mMsg").textContent = err.message; $("mOk").disabled = false; });
+    });
+  }
+
+  /* ---------- init ---------- */
+  session = CONFIGURED ? loadSession() : null;
+  if (session) {
+    verifyAdmin().then(function (ok) { if (ok) { showApp(); } else { logout(); } }).catch(function () { logout(); });
+  } else { showLogin(); }
+})();
+</script>
+</body>
+</html>
