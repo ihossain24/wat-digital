@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WAT Invoice Generator</title>
+
+<style>
+:root{--green:#14532d;--light:#f0fdf4;--line:#d1d5db;--ink:#111827}
+*{box-sizing:border-box}body{margin:0;padding:20px;background:#eef2f7;color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+.toolbar,.authbar{max-width:900px;margin:0 auto 12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button{border:0;border-radius:7px;padding:10px 14px;font-weight:700;cursor:pointer}.primary{background:var(--green);color:white}.secondary{background:#e5e7eb;color:#111}.danger{background:#fee2e2;color:#991b1b;padding:6px}
+.authbar{background:white;padding:12px;border-radius:8px}.authbar input{padding:8px;border:1px solid var(--line);border-radius:5px;min-width:150px}.status{font-size:12px;color:#374151}
+.paper{max-width:900px;margin:auto;background:white;padding:38px 42px;box-shadow:0 5px 25px #00000012}
+.top{display:flex;justify-content:space-between;gap:20px;border-bottom:3px solid var(--green);padding-bottom:18px}.brand h1{margin:0;color:var(--green);font-size:36px;letter-spacing:2px}.brand p{margin:5px 0;color:#4b5563;line-height:1.5}.invoice-title{text-align:right}.invoice-title h2{margin:0 0 8px;font-size:29px;letter-spacing:2px}.invoice-title label{display:block;margin:5px 0;font-size:13px;color:#4b5563}
+input{font:inherit;border:1px solid var(--line);border-radius:4px;padding:7px}.invoice-title input{width:155px;text-align:right}
+.details{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin:22px 0}.details h3{margin:0 0 9px;color:var(--green);font-size:13px;text-transform:uppercase}.details input{width:100%;margin:4px 0}
+table{width:100%;border-collapse:collapse;margin-top:12px}th{background:var(--green);color:white;padding:10px 7px;font-size:12px;text-align:left}td{border-bottom:1px solid var(--line);padding:7px}td input{width:100%;min-width:0;border:1px solid #e5e7eb}.num{text-align:right}.sl{width:42px;text-align:center}.qty{width:72px}.price{width:135px}.line-total{text-align:right;white-space:nowrap;font-weight:700}.remove-cell{width:40px;text-align:center}
+.totals{display:flex;justify-content:flex-end;margin-top:18px}.total-box{min-width:270px;border-top:2px solid var(--green);padding-top:12px}.total-row{display:flex;justify-content:space-between;gap:20px;font-size:18px;font-weight:700}
+.words{margin-top:18px;padding:12px;background:var(--light);border-left:4px solid var(--green)}.words strong{display:block;margin-bottom:5px;font-size:12px;color:var(--green);text-transform:uppercase}
+.terms{margin-top:24px;border-top:1px solid var(--line);padding-top:12px}.terms h3{margin:0 0 8px;font-size:13px;color:var(--green)}.terms p{margin:5px 0;font-size:10px;line-height:1.4;color:#374151}.terms b{color:#111}.thankyou{text-align:center;color:var(--green);font-weight:bold;font-size:12px;margin-top:16px}.hint{text-align:center;font-size:12px;color:#555}
+@media(max-width:650px){body{padding:8px}.paper{padding:18px 12px}.top{flex-direction:column}.invoice-title{text-align:left}.invoice-title input{text-align:left}.details{grid-template-columns:1fr;gap:12px}table{font-size:11px}th,td{padding:5px 3px}.price{width:90px}.qty{width:50px}}
+@page{size:A4;margin:12mm}@media print{body{background:white;padding:0}.toolbar,.authbar,.hint,.screen-only{display:none!important}.paper{max-width:none;margin:0;padding:0;box-shadow:none}input{border:0!important;padding:2px 0!important;background:transparent!important;color:#111!important}.details input{border-bottom:1px solid #ddd!important}td input{border:0!important}.terms,.top,.details,table,.totals,.words{break-inside:avoid}}
+</style></head>
+<body>
+<div class="authbar screen-only"><strong>WAT Invoice Generator</strong><span class="status">Create one invoice and print or save it as PDF. No database or data storage.</span></div>
+<div class="toolbar screen-only">
+<button class="secondary" onclick="addRow()">+ Add Item</button>
+<button class="secondary" onclick="resetInvoice()">New Invoice</button>
+
+<button class="primary" onclick="downloadPDF()">Print / Save Invoice as PDF</button>
+</div>
+<main class="paper">
+<header class="top"><div class="brand"><h1>WAT</h1><p>Nairobi<br>Phone: 0106336449</p></div>
+<div class="invoice-title"><h2>INVOICE</h2><label>Invoice No. <input id="invoiceNo"></label><label>Date <input id="invoiceDate" type="date"></label></div></header>
+<section class="details"><div><h3>Bill To</h3><input id="customerName" placeholder="Customer Name"><input id="customerPhone" placeholder="Customer Phone"></div>
+<div><h3>Payment Details</h3><input id="paymentRef" placeholder="Payment Reference (optional)"><input id="servedBy" placeholder="Served By (optional)"></div></section>
+<table><thead><tr><th class="sl">SL</th><th>DESCRIPTION</th><th class="num qty">QNT</th><th class="num price">UNIT PRICE (KES)</th><th class="num price">TOTAL (KES)</th><th class="remove-cell screen-only"></th></tr></thead><tbody id="items"></tbody></table>
+<div class="totals"><div class="total-box"><div class="total-row"><span>Total Amount</span><span id="grandTotal">KES 0.00</span></div></div></div>
+<div class="words"><strong>Amount in Words</strong><span id="amountWords">Kenya Shillings Zero Only</span></div>
+<section class="terms"><h3>TERMS &amp; CONDITIONS</h3>
+<p><b>No Returns:</b> All purchased products are non-returnable. A 6-month warranty applies. Customers must check the laptop display at the shop before purchase. Physical damage, including cracks or burn marks, is not covered. Laptop in-screen issues are also excluded from the warranty.</p>
+<p><b>Warranty Service:</b> Warranty claims may require 2–72 hours for processing. In some cases, repairs may take 7–24 working days.</p>
+<p><b>VAT Policy:</b> All product prices are displayed inclusive of VAT. If a customer refuses to pay the applicable VAT, the seller shall not be held responsible.</p>
+<p><b>Acceptance:</b> By purchasing any product, the customer confirms that they have read, understood, and agreed to all the above terms and conditions.</p></section>
+<div class="thankyou">THANK YOU FOR YOUR BUSINESS!</div></main>
+<p class="hint">To keep a copy, choose “Save as PDF” in the browser print dialog. This page does not save invoice data.</p>
+<script>
+// Standalone invoice: no Supabase, database, login, or browser storage.
+function money(n){return 'KES '+(Number(n)||0).toLocaleString('en-KE',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function addRow(desc='',qty=1,price=''){const tr=document.createElement('tr');tr.innerHTML=`<td class="sl row-number"></td><td><input class="description" list="productList" placeholder="Product / Laptop Model" aria-label="Description"></td><td><input class="quantity" type="number" min="0" step="1" value="1" aria-label="Quantity" oninput="calculate()"></td><td><input class="unit-price" type="number" min="0" step="0.01" placeholder="0.00" aria-label="Unit price" oninput="calculate()"></td><td class="line-total">KES 0.00</td><td class="remove-cell screen-only"><button class="danger" onclick="removeRow(this)">×</button></td>`;
+document.getElementById('items').appendChild(tr);tr.querySelector('.description').value=desc;tr.querySelector('.quantity').value=qty;tr.querySelector('.unit-price').value=price;renumber();calculate()}
+function removeRow(b){if(document.querySelectorAll('#items tr').length===1){let r=document.querySelector('#items tr');r.querySelector('.description').value='';r.querySelector('.quantity').value=1;r.querySelector('.unit-price').value=''}else b.closest('tr').remove();renumber();calculate()}
+function renumber(){document.querySelectorAll('#items tr').forEach((r,i)=>r.querySelector('.row-number').textContent=i+1)}
+const ones=['Zero','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'],tens=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+function u1000(n){let s='';if(n>=100){s=ones[Math.floor(n/100)]+' Hundred';n%=100;if(n)s+=' '}if(n>=20){s+=tens[Math.floor(n/10)];n%=10;if(n)s+='-'+ones[n]}else if(n)s+=ones[n];return s}
+function intWords(n){if(!n)return'Zero';let a=[];for(let [v,l] of [[1e9,'Billion'],[1e6,'Million'],[1e3,'Thousand'],[1,'']])if(n>=v){let c=Math.floor(n/v);n%=v;a.push(u1000(c)+(l?' '+l:''))}return a.join(' ')}
+function toWords(x){x=Math.round((x+Number.EPSILON)*100)/100;let whole=Math.floor(x),c=Math.round((x-whole)*100);return'Kenya Shillings '+intWords(whole)+(c?' and '+intWords(c)+' Cents':'')+' Only'}
+function calculate(){let total=0;document.querySelectorAll('#items tr').forEach(r=>{let q=Math.max(0,+r.querySelector('.quantity').value||0),p=Math.max(0,+r.querySelector('.unit-price').value||0),v=q*p;total+=v;r.querySelector('.line-total').textContent=money(v)});document.getElementById('grandTotal').textContent=money(total);document.getElementById('amountWords').textContent=toWords(total);return total}
+function setDefaults(){let d=new Date();document.getElementById('invoiceDate').value=new Date(d-d.getTimezoneOffset()*60000).toISOString().slice(0,10);document.getElementById('invoiceNo').value='WAT-'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'-'+Math.floor(1000+Math.random()*9000)}
+function downloadPDF(){
+ const total=calculate();
+ const hasItem=[...document.querySelectorAll('#items tr')].some(r=>r.querySelector('.description').value.trim());
+ if(!hasItem){alert('Please enter at least one product before printing.');return}
+ window.print();
+}
+function resetInvoice(){if(!confirm('Start a new invoice? Unsaved changes will be lost.'))return;document.getElementById('customerName').value='';document.getElementById('customerPhone').value='';document.getElementById('paymentRef').value='';document.getElementById('servedBy').value='';document.getElementById('items').innerHTML='';addRow();setDefaults()}
+document.getElementById('items').innerHTML='';addRow();setDefaults();
+</script></body></html>
