@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="bn"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ল্যাপটপ প্রাইস লিস্ট</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:#000;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Bengali",sans-serif}
+header{position:sticky;top:0;background:#fff;border-bottom:2px solid #000;padding:12px 16px;z-index:5}
+h1{margin:0 0 10px;font-size:20px}
+#q{width:100%;padding:12px 14px;font-size:17px;border:2px solid #000;border-radius:10px;color:#000;background:#fff}
+.bar{display:flex;gap:8px;margin-top:10px;overflow-x:auto;padding-bottom:2px}
+.chip{flex:none;border:1.5px solid #000;background:#fff;color:#000;border-radius:20px;padding:6px 14px;font-size:14px;cursor:pointer}
+.chip.on{background:#000;color:#fff}
+select{margin-left:auto;flex:none;border:1.5px solid #000;border-radius:8px;padding:6px;background:#fff;color:#000;font-size:14px}
+main{max-width:900px;margin:0 auto;padding:12px 16px 40px}
+#count{font-size:13px;margin:4px 0 10px}
+.card{display:flex;justify-content:space-between;gap:12px;align-items:center;border:1px solid #000;border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.m{font-weight:700;font-size:16px}.s{font-size:14px;margin-top:3px}
+.p{font-weight:800;font-size:18px;white-space:nowrap}
+mark{background:#ffe14d;color:#000}
+.empty{text-align:center;padding:40px 0}
+</style></head><body>
+<header><h1>💻 ল্যাপটপ প্রাইস লিস্ট</h1>
+<input id="q" type="search" placeholder="সার্চ করুন: মডেল, i5, 8GB, Touch, 25000…" autocomplete="off">
+<div class="bar" id="bar"></div></header>
+<main><div id="count"></div><div id="list"></div></main>
+<script>
+const DATA=[["HP 640 G5", "CI5 /8th /8GB /256GB /AC", 21000], ["HP 650/450 G8", "CI5 /11th /8GB /512GB /AC", 32000], ["HP 650/450 G8", "CI5 /11th /8GB /512GB /AC/Touch", 36000], ["HP 650/450 G8", "CI7 /11th /8GB /512GB /AC", 36000], ["HP 650/450 G8", "CI7 /11th /8GB /512GB /AC/Touch", 40000], ["HP 820 G2", "CI5 5th 8/500", 14000], ["HP 820 G3", "CI5 6th 8/256", 19000], ["HP 820 G4", "CI5 7th 8/256", 20000], ["HP 840 G3", "CI5 /6th /8GB /256GB /AC", 21000], ["HP 840 G4", "CI5 /6th /8GB /256GB /AC", 22000], ["HP 840 G5", "CI5 /8th /8GB /256GB /AC", 25000], ["HP 840 G6", "CI5 /8th /8GB /256GB /AC", 26000], ["HP 840 G7", "CI5 /10th /8GB /512GB /AC", 30000], ["HP 840 G7", "CI5 /10th /8GB /512GB /AC/Touch", 34000], ["HP 840 G7", "CI7 /10th /8GB /512GB /AC", 34000], ["HP 840 G7", "CI7/10th /8GB /512GB /AC/Touch", 38000], ["HP 840 G8", "CI5 /11th /8GB /512GB /AC", 34000], ["HP 840 G8", "CI5 /11th /8GB /512GB /AC/Touch", 38000], ["HP 840 G8", "CI7 /11th /8GB /512GB /AC", 38000], ["HP 840 G8", "CI7 /11th /8GB /512GB /AC/Touch", 42000], ["HP 850 G8", "CI5 /11th /8GB /512GB /AC", 38000], ["HP 850 G8", "CI5 /11th /8GB /512GB /AC/Touch", 42000], ["HP 840 G10", "CI5 /13th /16GB /512GB /AC", 55000], ["HP 840 G11", "Ultra 5 /16GB /512GB /AC", 65000], ["HP 860 G11", "Ultra 7 /16GB /512GB /AC", 72000], ["HP 830 G5", "CI5 /8th /8GB /256GB /AC", 24000], ["HP 830 G6", "CI5 /8th /8GB /256GB /AC", 25000], ["HP 830 G7", "CI5 /10th /8GB /512GB /AC", 29000], ["HP 830 G7", "CI5 /10th /8GB /512GB /AC/Touch", 33000], ["HP 830 G7", "CI7 /10th /8GB /512GB /AC", 33000], ["HP 830 G7", "CI7 /10th /8GB /512GB /AC/ Touch", 37000], ["HP 830 G8", "CI5 /11th /8GB /512GB /AC", 33000], ["HP 830 G8", "CI5 /11th /8GB /512GB /AC/Touch", 37000], ["HP 830 G8", "CI7 /11th /8GB /512GB /AC", 37000], ["HP 830 G8", "CI7 /11th /16GB /512GB /AC/ Touch", 45000], ["HP 830 G9", "CI5 /12th /16GB /512GB /AC", 44000], ["HP 830 G9", "CI5 /12th /16GB /512GB /AC/ Touch", 48000], ["HP 630 G8", "CI5 /11th /8GB /512GB /AC Touch", 34000], ["HP 430 G8", "CI5 /11th /8GB /512GB /AC", 29000], ["HP 430 G7", "CI5 /10th /8GB /512GB /AC", 25000], ["HP 735 G5", "RYZEN 5 /8GB /256GB /AC", 24000], ["HP 745 G5", "RYZEN 5 /8GB /256GB /AC", 25000], ["HP 745 G5", "RYZEN 7 /8GB /256GB /AC", 29000], ["HP 845 G7", "RYZEN 5 /8GB /256GB /AC", 28000], ["HP 835 G8", "RYZEN 5 /8GB /256GB /AC", 31000], ["HP ELITE X2 G4 TAB", "I5 8TH 8/256/AC/ TOUCH", 25000], ["HP ELITE X2 TAB", "CORE M 8/256/AC/TOUCH", 15000], ["HP 845 G8", "RYZEN 5 /8GB /256GB /AC", 32000], ["HP DragonFly G3", "CI7 /12th /16GB /512GB /AC/Touch", 69000], ["HP DragonFly G2 X360", "CI5 /11th /16GB /512GB /AC/Touch", 68000], ["HP ZBook Firefly 14 G7", "CI5 /10th /8GB /512GB /AC", 32000], ["HP ZBook Firefly 14 G7", "CI7 /10th /8GB /512GB /AC", 36000], ["HP ZBook Firefly 14 G7", "CI7 /10th /16GB /512GB /AC/4GB Graphics", 51000], ["HP ZBook Firefly 14 G8", "CI5 /11th /8GB /512GB /AC", 36000], ["HP ZBook Firefly 14 G8", "CI7 /11th /8GB /512GB /AC", 40000], ["HP ZBook Firefly 14 G8", "CI7 /11th /16GB /512GB /AC/ 4GB Graphics", 58000], ["HP ZBook Firefly 14 G9", "CI7 /12th /16GB /512GB /AC/ 4GB Graphics", 63000], ["HP ZBook Firefly 15 G7", "CI7 /10th /16GB /512GB /AC/ 4GB Graphics", 59000], ["HP ZBook Firefly 15 G8", "CI7 /11th /16GB /512GB /AC/ 4GB Graphics", 62000], ["HP ZBook Firefly 15 G8", "CI7 /11th /16GB /512GB /AC", 48000], ["HP ZBook Firefly 16 G9", "CI7 /12th /16GB /512GB /AC/4GB Graphic", 72000], ["HP ZBook Firefly 16 G11", "ULTRA 7 /16GB /512GB /AC", 70000], ["HP Zbook Fury 15 G7", "CI7 /10th /16GB /512GB /AC/ 4GB Graphics", 65000], ["HP Zbook Fury 15 G8", "CI7 /11th /16GB /512GB /AC/ 4GB Graphics", 70000], ["HP 1030 G2 X360", "CI5 7th 8/256 Touch", 29000], ["HP 1030 G2 X360", "CI7 7th 16/256 Touch", 37000], ["HP 1030 G3 X360", "CI5 8th 8/256 Touch", 35000], ["HP 1030 G3 X360", "CI5 8th 16/256 Touch", 39000], ["HP 1030 G4 X360", "CI5 8th 8/256 Touch", 36000], ["HP 1030 G4 X360", "CI5 8th 16/256 Touch", 40000], ["HP 830 G6 X360", "CI5 8th 8/256 Touch", 33000], ["HP 830 G8 X360", "CI5 11th /16/512/Touch", 49000], ["HP 830 G8 X360", "CI7 11th 16/512/Touch", 53000], ["HP 1040 G6 X360", "CI7 8th 16/256 Touch", 40000], ["HP 1040 G7 X360", "CI5 10th 16/512 Touch", 48000], ["Lenovo X250", "CI5 5th 8/500", 12000], ["Lenovo X280", "CI7 8th 8/256", 22000], ["Lenovo X280", "CI7 8th 8/256 Touch", 25000], ["Lenovo X390", "CI5 8th 8/256", 21000], ["Lenovo T480s", "CI7 /8th /8GB /256GB /AC", 24000], ["Lenovo P50", "CI7 /6th /8GB /256GB /AC/4GB Graphics", 27000], ["LENOVO P1 GEN3", "I7/10TH/16GB/512GB/AC/4GBGR/AC", 53000], ["LENOVO E14", "RYZEN5/AMD/8/256", 21000], ["Lenovo X1 Yoga x360", "CI7 /8th /8GB /256GB /AC/Touch", 28000], ["Lenovo X1 Carbon Gen 6", "CI7 /8th /8GB /256GB /AC", 25000], ["Lenovo X1 Carbon  X360", "CI7 /7th /8GB /256GB /AC/Touch", 26000], ["Lenovo X1 Carbon", "CI7 /5th /8GB /256GB /AC", 17500], ["Lenovo T14 Gen 1", "CI7/10th /32Gb/256/AC", 39000], ["LENOVO X13 G2", "I5/11TH/16/256/TOUCH", 29000], ["Lenovo T14 Gen 2", "CI7/11th /32Gb/256/AC", 44000], ["Dell 7490/7400/5400/5300", "CI5 /8th /8GB /256GB /AC", 19500], ["Dell 7490/7400/5400/5300", "CI7/8th /8GB /256GB /AC", 23500], ["Dell 5590/5500", "CI7/8th /8GB /256GB /AC", 27000], ["Dell XPS 13\"", "CI5 /7th /8GB /256GB /AC", 19000], ["Dell 5300 /7390 2 IN 1", "CI5 8th 8/256 Touch", 25000], ["Dell Latitude 7420", "CI7 /11th /32GB /512GB /AC / Touch", 45000]];
+const items=DATA.map(([m,s,p])=>({m,s,p,b:m.split(/[ \/]/)[0]}));
+const brands=['সব',...new Set(items.map(i=>i.b))];
+let brand='সব',sort='def';
+const $=id=>document.getElementById(id);
+const esc=t=>t.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function hl(t,ws){let o=esc(t);ws.forEach(w=>{if(!w)return;o=o.replace(new RegExp('('+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','ig'),'<mark>$1</mark>')});return o}
+const bar=$('bar');
+brands.forEach(b=>{const e=document.createElement('button');e.className='chip'+(b===brand?' on':'');e.textContent=b;e.onclick=()=>{brand=b;[...bar.querySelectorAll('.chip')].forEach(c=>c.classList.toggle('on',c.textContent===b));render()};bar.appendChild(e)});
+const sel=document.createElement('select');sel.innerHTML='<option value="def">ক্রম</option><option value="lo">দাম: কম → বেশি</option><option value="hi">দাম: বেশি → কম</option>';sel.onchange=()=>{sort=sel.value;render()};bar.appendChild(sel);
+function render(){
+ const ws=$('q').value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+ let r=items.filter(i=>(brand==='সব'||i.b===brand)&&ws.every(w=>(i.m+' '+i.s+' '+i.p).toLowerCase().includes(w)));
+ if(sort==='lo')r=[...r].sort((a,b)=>a.p-b.p);if(sort==='hi')r=[...r].sort((a,b)=>b.p-a.p);
+ $('count').textContent=r.length+' টি পণ্য';
+ $('list').innerHTML=r.length?r.map(i=>`<div class="card"><div><div class="m">${hl(i.m,ws)}</div><div class="s">${hl(i.s,ws)}</div></div><div class="p">৳${i.p.toLocaleString('en-IN')}</div></div>`).join(''):'<div class="empty">কিছু পাওয়া যায়নি</div>';
+}
+$('q').addEventListener('input',render);render();
+</script></body></html>
